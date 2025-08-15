@@ -6,6 +6,11 @@
 //
 
 import SwiftUI
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
 
 struct ContentView: View {
     
@@ -26,11 +31,21 @@ struct ContentView: View {
             #if DEBUG
                 debugResourcesSection()
             #endif
-            }.listStyle(InsetGroupedListStyle())
+            }
+            #if os(iOS)
+            .listStyle(InsetGroupedListStyle())
+            #elseif os(macOS)
+            .listStyle(SidebarListStyle())
+            #endif
                 Text(viewModel.footerText)
                     .foregroundColor(.secondary)
                     .font(.callout)
-            }.background(Color(uiColor: .systemGroupedBackground))
+            }
+            #if os(iOS)
+            .background(Color(uiColor: .systemGroupedBackground))
+            #elseif os(macOS)
+            .background(Color(nsColor: .controlBackgroundColor))
+            #endif
             if isLoading {
                 LoadingView()
                     .offset(y: -50.0)
@@ -46,7 +61,11 @@ struct ContentView: View {
     func pasteboardSection() -> some View {
         Section {
             Button(action: {
+                #if os(iOS)
                 pastedLink = UIPasteboard.general.string
+                #elseif os(macOS)
+                pastedLink = NSPasteboard.general.string(forType: .string)
+                #endif
             }) {
                 Text("Paste URL")
             }

@@ -6,12 +6,17 @@
 //
 
 import Foundation
+#if os(iOS)
 import Photos
+#elseif os(macOS)
+import AppKit
+#endif
 
 struct PhotosManager {
     
     private static let photoAlbumName = "SwiftyYTDL"
     
+    #if os(iOS)
     private static func requestAuthorization() -> PHAuthorizationStatus {
         var authStatus = PHAuthorizationStatus.notDetermined
         let sem = DispatchSemaphore(value: 0)
@@ -68,10 +73,12 @@ struct PhotosManager {
         
         throw "Failed to create an album"
     }
+    #endif
     
     // MARK: -
     
     static func saveToPhotos(at fileUrl: URL) throws {
+        #if os(iOS)
         let collection = try fetchAssetCollection()
         
         var error: Error?
@@ -94,6 +101,17 @@ struct PhotosManager {
         }
 
         try FileManager.default.removeItem(at: fileUrl)
+        #elseif os(macOS)
+        // On macOS, save to Downloads folder
+        let downloadsURL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first!
+        let destinationURL = downloadsURL.appendingPathComponent(fileUrl.lastPathComponent)
+        
+        // Move file to Downloads folder
+        try FileManager.default.moveItem(at: fileUrl, to: destinationURL)
+        
+        // Show in Finder
+        NSWorkspace.shared.selectFile(destinationURL.path, inFileViewerRootedAtPath: downloadsURL.path)
+        #endif
     }
     
 }

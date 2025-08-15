@@ -13,7 +13,12 @@ struct SwiftyYTDLApp: App {
         WindowGroup {
             NavigationView {
                 ContentView(viewModel: ContentViewModel())
-            }.navigationViewStyle(.stack)
+            }
+            #if os(iOS)
+            .navigationViewStyle(.stack)
+            #elseif os(macOS)
+            .navigationViewStyle(.columns)
+            #endif
         }
     }
 }
